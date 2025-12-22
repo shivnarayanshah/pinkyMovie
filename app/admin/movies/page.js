@@ -92,10 +92,17 @@ export default function AllMoviesPage() {
                                             <span className="text-sm font-bold text-yellow-600">⭐ {m.rating}</span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">Active</span>
+                                            <span className={`px-3 py-1 text-xs font-bold rounded-full ${m.status?.toLowerCase() === 'released' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                                                {m.status || "Active"}
+                                            </span>
                                         </td>
                                         <td className="px-6 py-4 text-right space-x-2">
-                                            <Link href={`/admin/movies/edit/${m.movie_id}`} className="text-blue-600 hover:underline text-sm font-medium">Edit</Link>
+                                            <Link
+                                                href={`/admin/movies/edit/${m.movie_id}`}
+                                                className="text-blue-600 hover:text-blue-900 font-bold bg-blue-50 px-3 py-1 rounded-lg transition-colors"
+                                            >
+                                                Edit
+                                            </Link>
                                             <button onClick={() => handleDelete(m.movie_id)} className="text-red-600 hover:underline text-sm font-medium">Delete</button>
                                         </td>
                                     </tr>

@@ -8,6 +8,8 @@ import { useFormik } from "formik";
 import { MovieValidationSchema } from "@/server/lib/movieValidation";
 import toast from "react-hot-toast";
 
+import MovieForm from "@/components/MovieForm";
+
 export default function AddMoviePage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState([]);
@@ -65,8 +67,9 @@ export default function AddMoviePage() {
         const res = await getTMDBMovieDetails(tmdbId);
         if (res.success) {
             formik.setValues({
+                ...formik.initialValues, // Preserve defaults
                 ...res.movie,
-                downloadLinks: [], // Reset download links for new entry
+                downloadLinks: [], // Clear for new movie
             });
             toast.success("Movie details fetched from TMDB");
         } else {
@@ -77,32 +80,35 @@ export default function AddMoviePage() {
 
     return (
         <AdminLayout>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 {/* Search Panel */}
                 <div className="lg:col-span-1 space-y-6">
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-4">
                         <h3 className="text-lg font-bold mb-4">TMDB Search</h3>
                         <form onSubmit={handleSearch} className="flex gap-2 mb-6">
                             <input
                                 type="text"
-                                className="flex-1 px-4 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
+                                className="flex-1 px-4 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                                 placeholder="Search movie..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
-                            <button className="bg-blue-600 text-white px-4 py-2 rounded-xl">Search</button>
+                            <button className="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold">Search</button>
                         </form>
 
-                        <div className="space-y-4 max-h-[600px] overflow-y-auto">
+                        <div className="space-y-4 max-h-[calc(100vh-250px)] overflow-y-auto">
+                            {searchResults.length === 0 && !loading && (
+                                <p className="text-gray-400 text-center py-10 text-sm italic">Search movies to populate form</p>
+                            )}
                             {searchResults.map((m) => (
                                 <div
                                     key={m.id}
                                     className="flex items-center gap-4 p-3 hover:bg-blue-50 rounded-xl cursor-pointer transition-colors border border-transparent hover:border-blue-100"
                                     onClick={() => handleSelectMovie(m.id)}
                                 >
-                                    <img src={m.poster_url} alt={m.title} className="w-12 h-18 rounded shadow-sm" />
-                                    <div>
-                                        <p className="text-sm font-bold text-gray-900 leading-tight">{m.title}</p>
+                                    <img src={m.poster_url} alt={m.title} className="w-10 h-14 rounded shadow-sm object-cover" />
+                                    <div className="min-w-0">
+                                        <p className="text-sm font-bold text-gray-900 leading-tight truncate">{m.title}</p>
                                         <p className="text-xs text-gray-500">{m.release_date?.split("-")[0] || "N/A"} • ⭐ {m.rating.toFixed(1)}</p>
                                     </div>
                                 </div>
@@ -112,49 +118,12 @@ export default function AddMoviePage() {
                 </div>
 
                 {/* Form Panel */}
-                <div className="lg:col-span-2">
-                    <form onSubmit={formik.handleSubmit} className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 space-y-6">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-lg font-bold">Movie Details</h3>
-                            <button
-                                type="submit"
-                                className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-xl transition-all shadow-md active:scale-95"
-                            >
-                                Save Movie
-                            </button>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-                            <div>
-                                <label className="block font-medium text-gray-700 mb-1">Title</label>
-                                <input {...formik.getFieldProps("title")} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
-                                {formik.touched.title && formik.errors.title && <p className="text-red-500 text-xs mt-1">{formik.errors.title}</p>}
-                            </div>
-                            <div>
-                                <label className="block font-medium text-gray-700 mb-1">Movie ID (Unique)</label>
-                                <input {...formik.getFieldProps("movie_id")} className="w-full px-4 py-2 border rounded-lg bg-gray-50" />
-                            </div>
-                            <div className="md:col-span-2">
-                                <label className="block font-medium text-gray-700 mb-1">Overview</label>
-                                <textarea {...formik.getFieldProps("overview")} rows="4" className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
-                            </div>
-                            <div>
-                                <label className="block font-medium text-gray-700 mb-1">Poster URL</label>
-                                <input {...formik.getFieldProps("poster_url")} className="w-full px-4 py-2 border rounded-lg" />
-                            </div>
-                            <div>
-                                <label className="block font-medium text-gray-700 mb-1">Genres (Comma separated)</label>
-                                <input
-                                    value={formik.values.genres.join(", ")}
-                                    onChange={(e) => formik.setFieldValue("genres", e.target.value.split(",").map(g => g.trim()))}
-                                    className="w-full px-4 py-2 border rounded-lg"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Add more fields as per schema if needed, keeping it concise for now */}
-                        <p className="text-xs text-gray-400 italic">Pre-filled with TMDB data where possible. All fields follow MovieSchema.</p>
-                    </form>
+                <div className="lg:col-span-3">
+                    <MovieForm
+                        formik={formik}
+                        title="Add New Movie"
+                        submitText="Save Movie"
+                    />
                 </div>
             </div>
         </AdminLayout>
