@@ -10,6 +10,7 @@ export default function ApiKeysPage() {
     const [loading, setLoading] = useState(true);
     const [label, setLabel] = useState("");
     const [newKey, setNewKey] = useState(null);
+    const [expandedKey, setExpandedKey] = useState(null);
 
     const fetchKeys = async () => {
         setLoading(true);
@@ -52,6 +53,11 @@ export default function ApiKeysPage() {
         }
     };
 
+    const copyToClipboard = (text) => {
+        navigator.clipboard.writeText(text);
+        toast.success("Copied to clipboard");
+    };
+
     return (
         <AdminLayout>
             <div className="max-w-4xl mx-auto space-y-8">
@@ -79,10 +85,7 @@ export default function ApiKeysPage() {
                                 {newKey}
                             </code>
                             <button
-                                onClick={() => {
-                                    navigator.clipboard.writeText(newKey);
-                                    toast.success("Copied to clipboard");
-                                }}
+                                onClick={() => copyToClipboard(newKey)}
                                 className="mt-2 text-xs font-bold text-blue-600 hover:underline"
                             >
                                 Copy to Clipboard
@@ -103,31 +106,87 @@ export default function ApiKeysPage() {
                             <div className="p-10 text-center text-gray-400 animate-pulse">Loading keys...</div>
                         ) : keys.length > 0 ? (
                             keys.map((key) => (
-                                <div key={key._id} className="p-6 flex items-center justify-between hover:bg-gray-50 transition-colors group">
-                                    <div className="space-y-1">
-                                        <div className="flex items-center gap-3">
-                                            <p className="font-bold text-gray-900">{key.label}</p>
-                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${key.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
-                                                {key.isActive ? "Active" : "Inactive"}
-                                            </span>
+                                <div key={key._id} className="transition-all duration-200">
+                                    <div
+                                        className={`p-6 flex items-center justify-between hover:bg-gray-50 cursor-pointer transition-colors group ${expandedKey === key._id ? "bg-gray-50" : ""}`}
+                                        onClick={() => setExpandedKey(expandedKey === key._id ? null : key._id)}
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center font-bold">
+                                                {key.label[0].toUpperCase()}
+                                            </div>
+                                            <div className="space-y-0.5">
+                                                <div className="flex items-center gap-3">
+                                                    <p className="font-bold text-gray-900">{key.label}</p>
+                                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${key.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                                                        {key.isActive ? "Active" : "Inactive"}
+                                                    </span>
+                                                </div>
+                                                <p className="text-xs font-mono text-gray-400 truncate max-w-[150px]">{key.key}</p>
+                                            </div>
                                         </div>
-                                        <p className="text-xs font-mono text-gray-400">{key.key}</p>
-                                        <p className="text-[10px] text-gray-400 capitalize">Limit: {key.rateLimit} req/min • Usage: {key.usage}</p>
+                                        <div className="flex items-center gap-4">
+                                            <div className="text-right hidden sm:block">
+                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Usage</p>
+                                                <p className="text-sm font-bold text-gray-900">{key.usage}</p>
+                                            </div>
+                                            <div className="text-gray-400 text-xl transition-transform" style={{ transform: expandedKey === key._id ? 'rotate(90deg)' : 'rotate(0)' }}>
+                                                ›
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="flex gap-2">
-                                        <button
-                                            onClick={() => handleToggle(key._id)}
-                                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${key.isActive ? "text-red-500 hover:bg-red-50" : "text-green-500 hover:bg-green-50"}`}
-                                        >
-                                            {key.isActive ? "Deactivate" : "Activate"}
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(key._id)}
-                                            className="px-4 py-2 rounded-lg text-xs font-bold text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100"
-                                        >
-                                            Delete
-                                        </button>
-                                    </div>
+
+                                    {/* Expanded Details */}
+                                    {expandedKey === key._id && (
+                                        <div className="px-6 pb-6 bg-gray-50 border-t border-gray-100 animate-in fade-in slide-in-from-top-2 duration-200">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                                                <div className="space-y-4">
+                                                    <div>
+                                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Masked API Key</label>
+                                                        <div className="flex gap-2">
+                                                            <code className="bg-white px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-blue-600 font-mono flex-1">{key.key}</code>
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); copyToClipboard(key.key); }}
+                                                                className="text-xs font-bold text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"
+                                                            >
+                                                                Copy
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex gap-8">
+                                                        <div>
+                                                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Rate Limit</label>
+                                                            <p className="text-sm font-bold text-green-600">Unlimited</p>
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Usage History</label>
+                                                            <p className="text-sm font-bold">{key.usage} total calls</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-4">
+                                                    <div>
+                                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Associated Label</label>
+                                                        <p className="text-sm font-bold text-gray-800">{key.label}</p>
+                                                    </div>
+                                                    <div className="flex gap-4">
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); handleToggle(key._id); }}
+                                                            className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${key.isActive ? "bg-red-50 text-red-600 hover:bg-red-100" : "bg-green-50 text-green-600 hover:bg-green-100"}`}
+                                                        >
+                                                            {key.isActive ? "Deactivate Key" : "Activate Key"}
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); handleDelete(key._id); }}
+                                                            className="flex-1 py-2 bg-gray-200 text-gray-700 rounded-xl text-xs font-bold hover:bg-red-600 hover:text-white transition-all shadow-sm"
+                                                        >
+                                                            Delete Forever
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             ))
                         ) : (

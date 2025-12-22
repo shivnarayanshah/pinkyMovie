@@ -25,7 +25,7 @@ export default function EditMoviePage({ params: paramsPromise }) {
             country: "",
             genres: [],
             original_language: "",
-            language: "English",
+            display_language: "Hindi",
             popularity: 0,
             rating: 0,
             runtime: 0,
@@ -53,9 +53,21 @@ export default function EditMoviePage({ params: paramsPromise }) {
         const fetchMovie = async () => {
             const res = await getMovieById(id);
             if (res.success) {
+                // Ensure no null values are passed to formik
+                const sanitizedMovie = { ...res.movie };
+                Object.keys(sanitizedMovie).forEach(key => {
+                    if (sanitizedMovie[key] === null) {
+                        sanitizedMovie[key] = "";
+                    }
+                });
+
+                if (!sanitizedMovie.display_language && sanitizedMovie.language) {
+                    sanitizedMovie.display_language = sanitizedMovie.language;
+                }
+
                 formik.setValues({
                     ...formik.initialValues,
-                    ...res.movie,
+                    ...sanitizedMovie,
                 });
             } else {
                 toast.error(res.message);

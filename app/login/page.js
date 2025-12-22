@@ -32,8 +32,18 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-            <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-10">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 relative">
+            <Link
+                href="/"
+                className="absolute top-8 left-8 flex items-center gap-2 text-gray-500 hover:text-blue-600 font-semibold transition-colors group"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 transition-transform group-hover:-translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m15 18-6-6 6-6" />
+                </svg>
+                Go to Home
+            </Link>
+
+            <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-10 mt-16 md:mt-0">
                 <div className="text-center mb-10">
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
                     <p className="text-gray-500">Sign in to manage your movie database</p>

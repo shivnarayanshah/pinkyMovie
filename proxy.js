@@ -5,7 +5,7 @@ const SECRET = new TextEncoder().encode(
     process.env.JWT_SECRET || process.env.SECRET_KEY || "default_secret_keep_it_safe"
 );
 
-export async function middleware(request) {
+export async function proxy(request) {
     const { pathname } = request.nextUrl;
 
     // 1. Protect Admin Routes

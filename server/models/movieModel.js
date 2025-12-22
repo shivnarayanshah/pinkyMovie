@@ -10,7 +10,7 @@ const MovieSchema = new mongoose.Schema(
     country: { type: String },
     genres: [{ type: String }],
     original_language: { type: String },
-    language: { type: String, default: 'Unknown', trim: true },
+    display_language: { type: String, default: 'Unknown', trim: true },
     popularity: { type: Number, default: 0 },
     rating: { type: Number, default: 0 },
     runtime: { type: Number },
@@ -29,8 +29,11 @@ const MovieSchema = new mongoose.Schema(
   }
 );
 
-// Text search index
-MovieSchema.index({ title: "text", original_title: "text", overview: "text" });
+// Text search index - Explicitly set language_override to "none" to prevent conflicts with our "language" field
+MovieSchema.index(
+  { title: "text", original_title: "text", overview: "text" },
+  { language_override: "none" }
+);
 
 // Sorting indexes
 MovieSchema.index({ release_date: -1 });

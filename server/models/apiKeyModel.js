@@ -19,10 +19,6 @@ const apiKeySchema = new mongoose.Schema(
             type: Boolean,
             default: true,
         },
-        rateLimit: {
-            type: Number, // requests per minute
-            default: 60,
-        },
         usage: {
             type: Number,
             default: 0,

@@ -9,7 +9,7 @@ export const MovieValidationSchema = Yup.object().shape({
     country: Yup.string(),
     genres: Yup.array().of(Yup.string()).min(1, "At least one genre is required"),
     original_language: Yup.string(),
-    language: Yup.string().default("English"),
+    display_language: Yup.string().default("Hindi"),
     popularity: Yup.number().default(0),
     rating: Yup.number().min(0).max(10).default(0),
     runtime: Yup.number(),
@@ -19,5 +19,6 @@ export const MovieValidationSchema = Yup.object().shape({
     poster_url: Yup.string().url("Invalid URL").required("Poster URL is required"),
     backdrop_url: Yup.string().url("Invalid URL"),
     status: Yup.string(),
+    views: Yup.number().default(0),
     downloadLinks: Yup.array().of(Yup.string().url("Invalid URL")),
 });

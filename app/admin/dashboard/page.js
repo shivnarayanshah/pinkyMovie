@@ -14,7 +14,6 @@ export default async function DashboardPage() {
                 <StatCard title="Total Languages" value={analytics.languageStats.length} color="purple" />
                 <StatCard title="Top Rated Content" value={analytics.topRated[0]?.title || "N/A"} color="yellow" isText />
             </div>
-
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
                 {/* Genre Distribution */}
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 min-h-[300px]">
@@ -47,7 +46,7 @@ export default async function DashboardPage() {
                             analytics.recentMovies.map((m) => (
                                 <div key={m.movie_id} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors">
                                     <div className="flex items-center">
-                                        <div className="w-10 h-14 bg-gray-200 rounded overflow-hidden mr-4">
+                                        <div className="w-20 h-30 bg-gray-200 rounded overflow-hidden mr-4">
                                             <img src={m.poster_url} alt={m.title} className="w-full h-full object-cover" />
                                         </div>
                                         <div>
@@ -64,6 +63,39 @@ export default async function DashboardPage() {
                             <div className="py-20 text-center text-gray-400 italic text-sm">No recent movies found</div>
                         )}
                     </div>
+                </div>
+            </div>
+
+            {/* Top Viewed Movies */}
+            <div className="mt-8 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-bold text-gray-800">Top Viewed Movies (All Time)</h3>
+                    <span className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-lg uppercase tracking-wider">Top 10</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                    {analytics.topViewed.length > 0 ? (
+                        analytics.topViewed.map((m) => (
+                            <div key={m.movie_id} className="group relative overflow-hidden rounded-xl border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all">
+                                <div className="aspect-[2/3] relative overflow-hidden">
+                                    <img src={m.poster_url} alt={m.title} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+                                        <p className="text-white text-xs font-bold truncate">{m.title}</p>
+                                    </div>
+                                </div>
+                                <div className="p-3 bg-white flex items-center justify-between">
+                                    <span className="text-xs font-black text-gray-400">#{analytics.topViewed.indexOf(m) + 1}</span>
+                                    <div className="flex items-center gap-1 text-blue-600">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" />
+                                        </svg>
+                                        <span className="text-xs font-black">{m.views?.toLocaleString() || 0}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="col-span-full py-20 text-center text-gray-400 italic text-sm">No view data available yet</div>
+                    )}
                 </div>
             </div>
         </AdminLayout>

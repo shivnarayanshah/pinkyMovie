@@ -34,11 +34,11 @@ const fetchCachedAnalytics = unstable_cache(
                 { $sort: { count: -1 } }
             ]),
             Movie.aggregate([
-                { $group: { _id: "$language", count: { $sum: 1 } } },
+                { $group: { _id: "$display_language", count: { $sum: 1 } } },
                 { $sort: { count: -1 } }
             ]),
             Movie.find().sort({ rating: -1 }).limit(5).lean(),
-            Movie.find().sort({ views: -1 }).limit(5).lean()
+            Movie.find().sort({ views: -1 }).limit(10).lean()
         ]);
 
         return {

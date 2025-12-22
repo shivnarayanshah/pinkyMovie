@@ -72,7 +72,7 @@ export default function MovieForm({ formik, title, submitText }) {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:col-span-2">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:col-span-2">
                         <div>
                             <label className="block font-semibold text-gray-700 mb-1">Country</label>
                             <input {...formik.getFieldProps("country")} className="w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. USA" />
@@ -80,6 +80,17 @@ export default function MovieForm({ formik, title, submitText }) {
                         <div>
                             <label className="block font-semibold text-gray-700 mb-1">Original Language</label>
                             <input {...formik.getFieldProps("original_language")} className="w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. en" />
+                        </div>
+                        <div>
+                            <label className="block font-semibold text-gray-700 mb-1">Display Language</label>
+                            <select {...formik.getFieldProps("display_language")} className="w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                                <option value="Hindi">Hindi</option>
+                                <option value="English">English</option>
+                                <option value="Nepali">Nepali</option>
+                                <option value="Chinese">Chinese</option>
+                                <option value="Korean">Korean</option>
+                                <option value="Bhojpuri">Bhojpuri</option>
+                            </select>
                         </div>
                     </div>
 

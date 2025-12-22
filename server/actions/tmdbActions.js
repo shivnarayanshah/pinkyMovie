@@ -14,33 +14,33 @@ const getHeaders = () => ({
 function normalizeTMDBMovie(tmdbMovie) {
     return {
         movie_id: tmdbMovie.id.toString(),
-        title: tmdbMovie.title,
-        original_title: tmdbMovie.original_title,
-        overview: tmdbMovie.overview,
+        title: tmdbMovie.title || "",
+        original_title: tmdbMovie.original_title || "",
+        overview: tmdbMovie.overview || "",
         tagline: tmdbMovie.tagline || "",
-        country: tmdbMovie.production_countries?.[0]?.name || "Unknown",
+        country: tmdbMovie.production_countries?.[0]?.name || "",
         genres: tmdbMovie.genres?.map((g) => g.name) || [],
-        original_language: tmdbMovie.original_language,
-        language: "English", // Default, can be refined
+        original_language: tmdbMovie.original_language || "",
+        display_language: "Hindi", // Default matching user request
         popularity: tmdbMovie.popularity || 0,
         rating: tmdbMovie.vote_average || 0,
-        runtime: tmdbMovie.runtime,
-        release_date: tmdbMovie.release_date,
+        runtime: tmdbMovie.runtime || 0,
+        release_date: tmdbMovie.release_date || "",
         revenue: tmdbMovie.revenue || 0,
-        imdb_id: tmdbMovie.imdb_id,
+        imdb_id: tmdbMovie.imdb_id || "",
         poster_url: tmdbMovie.poster_path ? `${TMDB_IMAGE_BASE_URL}${tmdbMovie.poster_path}` : "",
         backdrop_url: tmdbMovie.backdrop_path ? `${TMDB_IMAGE_BASE_URL}${tmdbMovie.backdrop_path}` : "",
-        status: tmdbMovie.status,
+        status: tmdbMovie.status || "",
         views: 0,
         downloadLinks: [],
     };
 }
 
-export async function searchTMDBMovies(query) {
+export async function searchTMDBMovies(query, page = 1) {
     if (!query) return { success: false, message: "Query is required" };
 
     try {
-        const url = `${TMDB_BASE_URL}/search/movie?query=${encodeURIComponent(query)}&include_adult=false&language=en-US&page=1`;
+        const url = `${TMDB_BASE_URL}/search/movie?query=${encodeURIComponent(query)}&include_adult=false&language=en-US&page=${page}`;
         const res = await fetch(url, { headers: getHeaders() });
         const data = await res.json();
 
@@ -55,6 +55,8 @@ export async function searchTMDBMovies(query) {
                 rating: m.vote_average,
                 poster_url: m.poster_path ? `${TMDB_IMAGE_BASE_URL}${m.poster_path}` : null,
             })),
+            totalPages: data.total_pages,
+            currentPage: data.page,
         };
     } catch (error) {
         console.error("TMDB Search Error:", error);

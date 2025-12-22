@@ -5,6 +5,7 @@ import AdminLayout from "@/components/AdminLayout";
 import { getAllMovies, deleteMovie } from "@/server/actions/movieActions";
 import toast from "react-hot-toast";
 import Link from "next/link";
+import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 
 export default function AllMoviesPage() {
     const [movies, setMovies] = useState([]);
@@ -12,6 +13,10 @@ export default function AllMoviesPage() {
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(true);
+
+    // Modal state
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [movieToDelete, setMovieToDelete] = useState(null);
 
     const fetchMovies = useCallback(async () => {
         setLoading(true);
@@ -30,15 +35,24 @@ export default function AllMoviesPage() {
         return () => clearTimeout(delaySearch);
     }, [fetchMovies]);
 
-    const handleDelete = async (id) => {
-        if (!confirm("Are you sure you want to delete this movie?")) return;
-        const res = await deleteMovie(id);
+    const openDeleteModal = (movie) => {
+        setMovieToDelete(movie);
+        setIsModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!movieToDelete) return;
+
+        setIsModalOpen(false);
+        const res = await deleteMovie(movieToDelete.movie_id);
+
         if (res.success) {
             toast.success(res.message);
             fetchMovies();
         } else {
             toast.error(res.message);
         }
+        setMovieToDelete(null);
     };
 
     return (
@@ -77,10 +91,10 @@ export default function AllMoviesPage() {
                                 ))
                             ) : movies.length > 0 ? (
                                 movies.map((m) => (
-                                    <tr key={m.movie_id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="px-6 py-4">
+                                    <tr key={m.movie_id} className="hover:bg-gray-50 transition-colors  ">
+                                        <td className="px-6 py-4 ">
                                             <div className="flex items-center">
-                                                <img src={m.poster_url} className="w-10 h-14 rounded object-cover mr-4 shadow-sm" alt="" />
+                                                <img src={m.poster_url} className="w-20 h-30 rounded object-cover mr-4 shadow-sm" alt="" />
                                                 <div>
                                                     <p className="text-sm font-bold text-gray-900">{m.title}</p>
                                                     <p className="text-xs text-gray-500">{m.original_language?.toUpperCase()} • {m.genres.slice(0, 2).join(", ")}</p>
@@ -99,11 +113,16 @@ export default function AllMoviesPage() {
                                         <td className="px-6 py-4 text-right space-x-2">
                                             <Link
                                                 href={`/admin/movies/edit/${m.movie_id}`}
-                                                className="text-blue-600 hover:text-blue-900 font-bold bg-blue-50 px-3 py-1 rounded-lg transition-colors"
+                                                className="text-blue-600 hover:text-blue-900 font-bold bg-blue-50 px-3 py-1 rounded-lg transition-all active:scale-95"
                                             >
                                                 Edit
                                             </Link>
-                                            <button onClick={() => handleDelete(m.movie_id)} className="text-red-600 hover:underline text-sm font-medium">Delete</button>
+                                            <button
+                                                onClick={() => openDeleteModal(m)}
+                                                className="text-red-600 hover:text-red-900 font-bold bg-red-50 px-3 py-1 rounded-lg transition-all cursor-pointer active:scale-95"
+                                            >
+                                                Delete
+                                            </button>
                                         </td>
                                     </tr>
                                 ))
@@ -136,6 +155,13 @@ export default function AllMoviesPage() {
                     </div>
                 </div>
             </div>
+
+            <DeleteConfirmModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onConfirm={confirmDelete}
+                movieTitle={movieToDelete?.title}
+            />
         </AdminLayout>
     );
 }
