@@ -122,7 +122,7 @@ export default function ApiKeysPage() {
                                                         {key.isActive ? "Active" : "Inactive"}
                                                     </span>
                                                 </div>
-                                                <p className="text-xs font-mono text-gray-400 truncate max-w-[150px]">{key.key}</p>
+                                                <p className="text-xs font-mono text-gray-400 break-all">{key.key}</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-4">

@@ -23,7 +23,7 @@ export async function generateApiKey(label) {
     const hashedKey = await bcrypt.hash(rawKey, 10);
 
     const newApiKey = await ApiKey.create({
-        key: rawKey.substring(0, 8) + "...", // Store a masked version for display
+        key: rawKey, // Store the full raw key for display and copying
         hashedKey,
         label,
     });

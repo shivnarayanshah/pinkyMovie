@@ -29,12 +29,13 @@ export default function AdminLayout({ children }) {
     return (
         <div className="flex min-h-screen bg-gray-50">
             {/* Sidebar */}
-            <aside className="w-64 bg-white border-r border-gray-200 fixed h-screen overflow-hidden">
+            <aside className="w-64 bg-white border-r border-gray-200 fixed h-screen overflow-hidden flex flex-col">
                 <div className="p-6">
                     <h1 className="text-2xl font-bold text-blue-600">Movie CMS</h1>
                     <p className="text-xs text-gray-400 mt-1 uppercase tracking-wider font-semibold">Admin Panel</p>
                 </div>
-                <nav className="mt-4 px-4 space-y-1">
+
+                <nav className="flex-1 px-4 space-y-1 overflow-y-auto pb-4">
                     {navLinks.map((link) => {
                         const isActive = pathname === link.href;
                         return (
@@ -51,7 +52,8 @@ export default function AdminLayout({ children }) {
                         );
                     })}
                 </nav>
-                <div className="absolute bottom-0 w-64 p-4 border-t border-gray-200">
+
+                <div className="p-4 border-t border-gray-200">
                     <div className="space-y-2">
                         <button
                             onClick={async () => {
@@ -91,3 +93,4 @@ export default function AdminLayout({ children }) {
         </div>
     );
 }
+
