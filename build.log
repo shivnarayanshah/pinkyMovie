@@ -1,0 +1,40 @@
+
+> movie-app@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.0
+   - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 9.0s
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/11) ...
+   Generating static pages (2/11) 
+   Generating static pages (5/11) 
+   Generating static pages (8/11) 
+ ✓ Generating static pages (11/11)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ○ /                                      162 B         105 kB
+├ ○ /_not-found                            995 B         103 kB
+├ ○ /addmovie                              133 B         102 kB
+├ ○ /admin/add-movie                     26.6 kB         137 kB
+├ ƒ /admin/dashboard                     1.25 kB         112 kB
+├ ○ /admin/movies                        2.59 kB         113 kB
+├ ƒ /api/movies                            133 B         102 kB
+├ ○ /login                                 133 B         102 kB
+└ ○ /updatemovie                           133 B         102 kB
++ First Load JS shared by all             102 kB
+  ├ chunks/255-01c481785f268126.js       45.7 kB
+  ├ chunks/4bd1b696-c023c6e3521b1417.js  54.2 kB
+  └ other shared chunks (total)          1.99 kB
+
+
+ƒ Middleware                             39.8 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

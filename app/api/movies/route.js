@@ -1,0 +1,84 @@
+import { NextResponse } from "next/server";
+import connectDatabase from "@/server/lib/connectDB";
+import Movie from "@/server/models/movieModel";
+import ApiKey from "@/server/models/apiKeyModel";
+import bcrypt from "bcryptjs";
+
+export async function GET(request) {
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get("page")) || 1;
+    const limit = parseInt(searchParams.get("limit")) || 20;
+    const search = searchParams.get("search") || "";
+    const genre = searchParams.get("genre") || "";
+    const language = searchParams.get("language") || "";
+    const apiKeyRaw = request.headers.get("x-api-key");
+
+    try {
+        await connectDatabase();
+
+        // 1. Validate API Key (Double check if middleware didn't do it)
+        if (!apiKeyRaw) {
+            return NextResponse.json({ success: false, message: "API Key missing" }, { status: 401 });
+        }
+
+        // Ideally this should be cached in Redis for speed
+        const apiKeys = await ApiKey.find({ isActive: true }).lean();
+        let validKey = null;
+
+        for (const k of apiKeys) {
+            const match = await bcrypt.compare(apiKeyRaw, k.hashedKey);
+            if (match) {
+                validKey = k;
+                break;
+            }
+        }
+
+        if (!validKey) {
+            return NextResponse.json({ success: false, message: "Invalid API Key" }, { status: 403 });
+        }
+
+        // 2. Build Query
+        let query = {};
+        if (search) {
+            query.$text = { $search: search };
+        }
+        if (genre) {
+            query.genres = { $in: [genre] };
+        }
+        if (language) {
+            query.language = language;
+        }
+
+        // 3. Fetch Data (Optimized with lean)
+        const total = await Movie.countDocuments(query);
+        const movies = await Movie.find(query)
+            .sort({ release_date: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .lean();
+
+        // 4. Update usage (async, don't block response)
+        ApiKey.findByIdAndUpdate(validKey._id, {
+            $inc: { usage: 1 },
+            $set: { lastUsedAt: new Date() }
+        }).catch(err => console.error("Update usage error:", err));
+
+        return NextResponse.json({
+            success: true,
+            data: movies,
+            pagination: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit)
+            }
+        });
+
+    } catch (error) {
+        console.error("API Error:", error);
+        return NextResponse.json(
+            { success: false, message: "Internal Server Error" },
+            { status: 500 }
+        );
+    }
+}
