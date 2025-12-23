@@ -54,33 +54,60 @@ export default function AddMoviePage() {
 
     const handleSearch = async (e, page = 1) => {
         if (e) e.preventDefault();
-        if (!searchQuery) return;
-        setLoading(true);
-        const res = await searchTMDBMovies(searchQuery, page);
-        if (res.success) {
-            setSearchResults(res.results);
-            setCurrentPage(res.currentPage);
-            setTotalPages(res.totalPages);
-        } else {
-            toast.error(res.message);
+        if (!searchQuery.trim()) {
+            toast.error("Please enter a search query");
+            return;
         }
-        setLoading(false);
+
+        setLoading(true);
+        try {
+            const res = await searchTMDBMovies(searchQuery, page);
+            if (res.success) {
+                setSearchResults(res.results || []);
+                setCurrentPage(res.currentPage || 1);
+                setTotalPages(res.totalPages || 1);
+
+                if (res.results?.length === 0) {
+                    toast.error("No movies found. Try a different search term.");
+                }
+            } else {
+                toast.error(res.message || "Failed to search movies");
+                setSearchResults([]);
+            }
+        } catch (error) {
+            console.error("Search error:", error);
+            toast.error("An unexpected error occurred. Please try again.");
+            setSearchResults([]);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleSelectMovie = async (tmdbId) => {
-        setLoading(true);
-        const res = await getTMDBMovieDetails(tmdbId);
-        if (res.success) {
-            formik.setValues({
-                ...formik.initialValues, // Preserve defaults
-                ...res.movie,
-                downloadLinks: [], // Clear for new movie
-            });
-            toast.success("Movie details fetched from TMDB");
-        } else {
-            toast.error(res.message);
+        if (!tmdbId) {
+            toast.error("Invalid movie ID");
+            return;
         }
-        setLoading(false);
+
+        setLoading(true);
+        try {
+            const res = await getTMDBMovieDetails(tmdbId);
+            if (res.success && res.movie) {
+                formik.setValues({
+                    ...formik.initialValues, // Preserve defaults
+                    ...res.movie,
+                    downloadLinks: [], // Clear for new movie
+                });
+                toast.success("Movie details fetched from TMDB");
+            } else {
+                toast.error(res.message || "Failed to fetch movie details");
+            }
+        } catch (error) {
+            console.error("Movie selection error:", error);
+            toast.error("An unexpected error occurred. Please try again.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -102,26 +129,51 @@ export default function AddMoviePage() {
                         </form>
 
                         <div className="space-y-4 max-h-[calc(100vh-320px)] overflow-y-auto mb-4">
-                            {searchResults.length === 0 && !loading && (
+                            {loading && (
+                                <div className="flex flex-col items-center justify-center py-10">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-3"></div>
+                                    <p className="text-gray-400 text-sm">Searching movies...</p>
+                                </div>
+                            )}
+                            {!loading && searchResults.length === 0 && (
                                 <p className="text-gray-400 text-center py-10 text-sm italic">Search movies to populate form</p>
                             )}
-                            {searchResults.map((m) => {
+                            {!loading && searchResults.length > 0 && searchResults.map((m) => {
+                                // Validate movie data before rendering
+                                if (!m || !m.id) return null;
+
                                 const isSelected = formik.values.movie_id === m.id.toString();
+                                const displayRating = typeof m.rating === 'number' ? m.rating.toFixed(1) : 'N/A';
+                                const releaseYear = m.release_date ? m.release_date.split("-")[0] : "N/A";
+                                const posterUrl = m.poster_url || "/placeholder-poster.svg";
+
                                 return (
                                     <div
                                         key={m.id}
-                                        className={`flex items-center gap-4 p-3 rounded-xl cursor-pointer transition-all border transform active:scale-95 ${isSelected
-                                            ? "bg-blue-100 border-blue-400 shadow-sm"
-                                            : "hover:bg-blue-50 border-transparent hover:border-blue-100 active:bg-blue-200"
+                                        className={`flex items-center gap-4 p-3 rounded-xl cursor-pointer transition-all border transform active:scale-95 hover:shadow-md ${isSelected
+                                                ? "bg-blue-100 border-blue-400 shadow-sm"
+                                                : "hover:bg-blue-50 border-transparent hover:border-blue-100 active:bg-blue-200"
                                             }`}
                                         onClick={() => handleSelectMovie(m.id)}
                                     >
-                                        <div className="w-16 h-24 shrink-0 bg-gray-100 rounded overflow-hidden shadow-sm">
-                                            <img src={m.poster_url || "/placeholder-poster.png"} alt={m.title} className="w-full h-full object-cover" />
+                                        <div className="w-16 h-24 shrink-0 bg-gradient-to-br from-purple-100 to-blue-100 rounded overflow-hidden shadow-sm">
+                                            <img
+                                                src={posterUrl}
+                                                alt={m.title || "Movie poster"}
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => {
+                                                    e.target.onerror = null;
+                                                    e.target.src = "/placeholder-poster.svg";
+                                                }}
+                                            />
                                         </div>
-                                        <div className="min-w-0">
-                                            <p className="text-sm font-bold text-gray-900 leading-tight truncate">{m.title}</p>
-                                            <p className="text-xs text-gray-500">{m.release_date?.split("-")[0] || "N/A"} • ⭐ {m.rating.toFixed(1)}</p>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="text-sm font-bold text-gray-900 leading-tight truncate">
+                                                {m.title || "Untitled"}
+                                            </p>
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                {releaseYear} • ⭐ {displayRating}
+                                            </p>
                                         </div>
                                     </div>
                                 );
@@ -129,12 +181,13 @@ export default function AddMoviePage() {
                         </div>
 
                         {/* Pagination Controls */}
-                        {totalPages > 1 && (
+                        {!loading && totalPages > 1 && (
                             <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                                 <button
                                     onClick={() => handleSearch(null, currentPage - 1)}
                                     disabled={currentPage === 1 || loading}
-                                    className="p-2 text-gray-500 hover:text-blue-600 disabled:opacity-30 disabled:hover:text-gray-500 transition-colors"
+                                    className="p-2 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-30 disabled:hover:text-gray-500 disabled:hover:bg-transparent transition-all cursor-pointer disabled:cursor-not-allowed"
+                                    aria-label="Previous page"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
                                 </button>
@@ -144,7 +197,8 @@ export default function AddMoviePage() {
                                 <button
                                     onClick={() => handleSearch(null, currentPage + 1)}
                                     disabled={currentPage === totalPages || loading}
-                                    className="p-2 text-gray-500 hover:text-blue-600 disabled:opacity-30 disabled:hover:text-gray-500 transition-colors"
+                                    className="p-2 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-30 disabled:hover:text-gray-500 disabled:hover:bg-transparent transition-all cursor-pointer disabled:cursor-not-allowed"
+                                    aria-label="Next page"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
                                 </button>

@@ -94,16 +94,28 @@ export default function AllMoviesPage() {
                                     <tr key={m.movie_id} className="hover:bg-gray-50 transition-colors  ">
                                         <td className="px-6 py-4 ">
                                             <div className="flex items-center">
-                                                <img src={m.poster_url} className="w-20 h-30 rounded object-cover mr-4 shadow-sm" alt="" />
+                                                <div className="w-10 h-14 shrink-0 rounded overflow-hidden shadow-sm mr-4 bg-gray-100">
+                                                    <img
+                                                        src={m.poster_url || "/placeholder-poster.svg"}
+                                                        className="w-full h-full object-cover"
+                                                        alt={m.title || "Movie poster"}
+                                                        onError={(e) => {
+                                                            e.target.onerror = null;
+                                                            e.target.src = "/placeholder-poster.svg";
+                                                        }}
+                                                    />
+                                                </div>
                                                 <div>
-                                                    <p className="text-sm font-bold text-gray-900">{m.title}</p>
-                                                    <p className="text-xs text-gray-500">{m.original_language?.toUpperCase()} • {m.genres.slice(0, 2).join(", ")}</p>
+                                                    <p className="text-sm font-bold text-gray-900 line-clamp-1">{m.title || "Untitled"}</p>
+                                                    <p className="text-xs text-gray-500">
+                                                        {m.original_language?.toUpperCase() || "N/A"} • {Array.isArray(m.genres) ? m.genres.slice(0, 2).join(", ") : "No Genre"}
+                                                    </p>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-gray-600">{m.release_date}</td>
+                                        <td className="px-6 py-4 text-sm text-gray-600">{m.release_date || "N/A"}</td>
                                         <td className="px-6 py-4">
-                                            <span className="text-sm font-bold text-yellow-600">⭐ {m.rating}</span>
+                                            <span className="text-sm font-bold text-yellow-600">⭐ {typeof m.rating === 'number' ? m.rating.toFixed(1) : "N/A"}</span>
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={`px-3 py-1 text-xs font-bold rounded-full ${m.status?.toLowerCase() === 'released' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
