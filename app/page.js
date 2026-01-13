@@ -10,7 +10,7 @@ export default function HomePage() {
       </p>
       <div className="flex flex-col sm:flex-row gap-4">
         <Link
-          href="/login"
+          href="/admin/dashboard"
           className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-2xl transition-all shadow-xl shadow-blue-200 active:scale-95"
         >
           Admin Dashboard
